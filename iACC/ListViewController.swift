@@ -157,7 +157,9 @@ class ListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = items[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "ItemCell")
-        cell.configure(item, longDateStyle: longDateStyle)
+        
+        let vm = ItemViewModel(item, longDateStyle: longDateStyle)
+        cell.configure(vm)
         return cell
     }
     
@@ -220,14 +222,14 @@ extension ItemViewModel {
         subtitle = friend.phone
     }
 }
-    
+
 extension ItemViewModel {
     init(card: Card) {
         title = card.number
         subtitle  = card.holder
     }
 }
- 
+
 extension ItemViewModel {
     init(transfer: Transfer, longDateStyle: Bool) {
         let numberFormatter = Formatters.number
@@ -252,33 +254,8 @@ extension ItemViewModel {
 }
 
 extension UITableViewCell {
-    func configure(_ item: Any, longDateStyle: Bool) {
-        if let friend = item as? Friend {
-            textLabel?.text = friend.name
-            detailTextLabel?.text = friend.phone
-        } else if let card = item as? Card {
-            textLabel?.text = card.number
-            detailTextLabel?.text = card.holder
-        } else if let transfer = item as? Transfer {
-            let numberFormatter = Formatters.number
-            numberFormatter.numberStyle = .currency
-            numberFormatter.currencyCode = transfer.currencyCode
-            
-            let amount = numberFormatter.string(from: transfer.amount as NSNumber)!
-            textLabel?.text = "\(amount) • \(transfer.description)"
-            
-            let dateFormatter = Formatters.date
-            if longDateStyle {
-                dateFormatter.dateStyle = .long
-                dateFormatter.timeStyle = .short
-                detailTextLabel?.text = "Sent to: \(transfer.recipient) on \(dateFormatter.string(from: transfer.date))"
-            } else {
-                dateFormatter.dateStyle = .short
-                dateFormatter.timeStyle = .short
-                detailTextLabel?.text = "Received from: \(transfer.sender) on \(dateFormatter.string(from: transfer.date))"
-            }
-        } else {
-            fatalError("unknown item: \(item)")
-        }
+    func configure(_ vm: ItemViewModel) {
+        textLabel?.text = vm.title
+        detailTextLabel?.text = vm.subtitle
     }
 }
